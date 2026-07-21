@@ -1,5 +1,5 @@
-// CRUD Tests - Task Manager
-describe('CRUD Operations - Task Manager', () => {
+// CRUD Tests - 01 Task Manager
+describe('CRUD Operations - 01 Task Manager', () => {
   beforeEach(() => {
     cy.visit('/');
     cy.get('.nav-link[data-page="tasks"]').click();
@@ -105,7 +105,7 @@ describe('CRUD Operations - Task Manager', () => {
     cy.request({
       method: 'POST',
       url: '/api/tasks',
-      body: {"title":"Test Task Title","description":"Test description","priority":"high","status":"todo","category":"Work"},
+      body: {"title": "Test Task Title", "description": "Test description", "priority": "high", "status": "todo", "category": "Work"},
     }).its('status').should('eq', 201);
   });
 
