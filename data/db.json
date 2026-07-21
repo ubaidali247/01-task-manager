@@ -1,0 +1,76 @@
+{
+  "tasks": [
+    {
+      "id": "seed-1",
+      "title": "Complete project report",
+      "description": "Sample description for Complete project report. This is test data for the flaky test detection research study.",
+      "category": "Work",
+      "createdAt": "2026-07-21T00:21:18.481Z",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": "seed-2",
+      "title": "Buy groceries",
+      "description": "Sample description for Buy groceries. This is test data for the flaky test detection research study.",
+      "category": "Personal",
+      "createdAt": "2026-07-20T00:21:18.502Z",
+      "status": "in-progress",
+      "priority": "medium"
+    },
+    {
+      "id": "seed-3",
+      "title": "Call dentist",
+      "description": "Sample description for Call dentist. This is test data for the flaky test detection research study.",
+      "category": "Shopping",
+      "createdAt": "2026-07-19T00:21:18.502Z",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": "seed-4",
+      "title": "Review pull requests",
+      "description": "Sample description for Review pull requests. This is test data for the flaky test detection research study.",
+      "category": "Health",
+      "createdAt": "2026-07-18T00:21:18.502Z",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": "seed-5",
+      "title": "Plan weekly meeting",
+      "description": "Sample description for Plan weekly meeting. This is test data for the flaky test detection research study.",
+      "category": "Work",
+      "createdAt": "2026-07-17T00:21:18.502Z",
+      "status": "in-progress",
+      "priority": "medium"
+    },
+    {
+      "id": "seed-6",
+      "title": "Update documentation",
+      "description": "Sample description for Update documentation. This is test data for the flaky test detection research study.",
+      "category": "Personal",
+      "createdAt": "2026-07-16T00:21:18.502Z",
+      "status": "done",
+      "priority": "high"
+    },
+    {
+      "id": "seed-7",
+      "title": "Fix login bug",
+      "description": "Sample description for Fix login bug. This is test data for the flaky test detection research study.",
+      "category": "Shopping",
+      "createdAt": "2026-07-15T00:21:18.502Z",
+      "status": "todo",
+      "priority": "low"
+    },
+    {
+      "id": "seed-8",
+      "title": "Design new feature",
+      "description": "Sample description for Design new feature. This is test data for the flaky test detection research study.",
+      "category": "Health",
+      "createdAt": "2026-07-14T00:21:18.502Z",
+      "status": "in-progress",
+      "priority": "medium"
+    }
+  ]
+}
