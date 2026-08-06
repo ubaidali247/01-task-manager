@@ -12,6 +12,44 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
+// ============================================================
+// FLAKINESS INJECTION LAYER
+// Controls which endpoints behave unreliably and how often
+// Used for: MSc Dissertation - AI-Assisted Flaky Test Detection
+// ============================================================
+const FLAKY_CONFIG = {
+  enabled: true,
+  slowEndpoints: ['/api/tasks', '/api/tasks/:id'],  // GET endpoints that randomly slow down
+  errorEndpoints: ['/api/tasks'],                       // POST endpoint that randomly errors
+  slowProbability: 0.35,    // 35% chance of slow response
+  errorProbability: 0.25,   // 25% chance of server error on POST
+  slowDelayMs: {
+    min: 3000,
+    max: 8000
+  }
+};
+
+function randomDelay(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shouldBeFlaky(probability) {
+  return FLAKY_CONFIG.enabled && Math.random() < probability;
+}
+
+// Flakiness middleware for GET /api/tasks
+function flakyGetMiddleware(req, res, next) {
+  if (shouldBeFlaky(FLAKY_CONFIG.slowProbability)) {
+    const delay = randomDelay(FLAKY_CONFIG.slowDelayMs.min, FLAKY_CONFIG.slowDelayMs.max);
+    console.log(`[FLAKY] Injecting ${delay}ms delay on GET /api/tasks`);
+    setTimeout(next, delay);
+  } else {
+    next();
+  }
+}
+
+// ============================================================
+
 function readDB() {
   if (!fs.existsSync(DB_PATH)) {
     const initial = { tasks: [] };
@@ -25,7 +63,6 @@ function writeDB(data) {
   fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
 }
 
-// Seed data if empty
 function seedIfEmpty() {
   const db = readDB();
   if (db.tasks.length === 0) {
@@ -33,74 +70,58 @@ function seedIfEmpty() {
     {
         "id": "seed-1",
         "title": "Complete project report",
-        "description": "Sample description for Complete project report. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 1.",
         "category": "Work",
-        "createdAt": "2026-07-21T00:21:18.481Z",
-        "status": "todo",
-        "priority": "low"
+        "createdAt": "2024-01-01T10:00:00.000Z"
     },
     {
         "id": "seed-2",
         "title": "Buy groceries",
-        "description": "Sample description for Buy groceries. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 2.",
         "category": "Personal",
-        "createdAt": "2026-07-20T00:21:18.502Z",
-        "status": "in-progress",
-        "priority": "medium"
+        "createdAt": "2024-02-02T10:00:00.000Z"
     },
     {
         "id": "seed-3",
         "title": "Call dentist",
-        "description": "Sample description for Call dentist. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 3.",
         "category": "Shopping",
-        "createdAt": "2026-07-19T00:21:18.502Z",
-        "status": "done",
-        "priority": "high"
+        "createdAt": "2024-03-03T10:00:00.000Z"
     },
     {
         "id": "seed-4",
         "title": "Review pull requests",
-        "description": "Sample description for Review pull requests. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 4.",
         "category": "Health",
-        "createdAt": "2026-07-18T00:21:18.502Z",
-        "status": "todo",
-        "priority": "low"
+        "createdAt": "2024-04-04T10:00:00.000Z"
     },
     {
         "id": "seed-5",
         "title": "Plan weekly meeting",
-        "description": "Sample description for Plan weekly meeting. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 5.",
         "category": "Work",
-        "createdAt": "2026-07-17T00:21:18.502Z",
-        "status": "in-progress",
-        "priority": "medium"
+        "createdAt": "2024-05-05T10:00:00.000Z"
     },
     {
         "id": "seed-6",
         "title": "Update documentation",
-        "description": "Sample description for Update documentation. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 6.",
         "category": "Personal",
-        "createdAt": "2026-07-16T00:21:18.502Z",
-        "status": "done",
-        "priority": "high"
+        "createdAt": "2024-06-06T10:00:00.000Z"
     },
     {
         "id": "seed-7",
         "title": "Fix login bug",
-        "description": "Sample description for Fix login bug. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 7.",
         "category": "Shopping",
-        "createdAt": "2026-07-15T00:21:18.502Z",
-        "status": "todo",
-        "priority": "low"
+        "createdAt": "2024-07-07T10:00:00.000Z"
     },
     {
         "id": "seed-8",
         "title": "Design new feature",
-        "description": "Sample description for Design new feature. This is test data for the flaky test detection research study.",
+        "description": "Sample description for research study item 8.",
         "category": "Health",
-        "createdAt": "2026-07-14T00:21:18.502Z",
-        "status": "in-progress",
-        "priority": "medium"
+        "createdAt": "2024-08-08T10:00:00.000Z"
     }
 ];
     writeDB(db);
@@ -108,13 +129,13 @@ function seedIfEmpty() {
 }
 seedIfEmpty();
 
-// GET all
-app.get('/api/tasks', (req, res) => {
+// GET all - with flakiness injection
+app.get('/api/tasks', flakyGetMiddleware, (req, res) => {
   const db = readDB();
   let items = db.tasks;
   if (req.query.search) {
     const q = req.query.search.toLowerCase();
-    items = items.filter(i => i.title && i.title.toLowerCase().includes(q) || (i.name && i.name.toLowerCase().includes(q)));
+    items = items.filter(i => (i.title && i.title.toLowerCase().includes(q)) || (i.name && i.name.toLowerCase().includes(q)));
   }
   if (req.query.category) {
     items = items.filter(i => i.category === req.query.category);
@@ -122,16 +143,31 @@ app.get('/api/tasks', (req, res) => {
   res.json(items);
 });
 
-// GET one
+// GET one - with flakiness injection
 app.get('/api/tasks/:id', (req, res) => {
-  const db = readDB();
-  const item = db.tasks.find(i => i.id === req.params.id);
-  if (!item) return res.status(404).json({ error: 'Not found' });
-  res.json(item);
+  if (shouldBeFlaky(FLAKY_CONFIG.slowProbability * 0.5)) {
+    const delay = randomDelay(2000, 5000);
+    console.log(`[FLAKY] Injecting ${delay}ms delay on GET /api/tasks/${req.params.id}`);
+    setTimeout(() => {
+      const db = readDB();
+      const item = db.tasks.find(i => i.id === req.params.id);
+      if (!item) return res.status(404).json({ error: 'Not found' });
+      res.json(item);
+    }, delay);
+  } else {
+    const db = readDB();
+    const item = db.tasks.find(i => i.id === req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    res.json(item);
+  }
 });
 
-// POST create
+// POST create - with flakiness injection (random 500 errors)
 app.post('/api/tasks', (req, res) => {
+  if (shouldBeFlaky(FLAKY_CONFIG.errorProbability)) {
+    console.log(`[FLAKY] Injecting 500 error on POST /api/tasks`);
+    return res.status(500).json({ error: 'Internal server error - flaky injection' });
+  }
   const db = readDB();
   const item = { id: uuidv4(), ...req.body, createdAt: new Date().toISOString() };
   db.tasks.push(item);
@@ -168,11 +204,11 @@ app.post('/api/reset', (req, res) => {
 });
 
 // Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', project: 'Task Manager' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', project: 'Task Manager', flakyEnabled: FLAKY_CONFIG.enabled }));
 
 // Serve frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
 
-app.listen(PORT, () => console.log('Task Manager server running on http://localhost:3001'));
+app.listen(PORT, () => console.log('Task Manager server running on http://localhost:3001 [FLAKY MODE: ' + FLAKY_CONFIG.enabled + ']'));
